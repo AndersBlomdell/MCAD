@@ -500,7 +500,8 @@ module rack(
         clearance=0.2,
         rim_thickness=8,
         rim_width=5,
-        flat=false)
+        flat=false,
+        helix_angle=0)
 {
 
     if (circular_pitch==false && diametral_pitch==false)
@@ -514,23 +515,41 @@ module rack(
     dedendum = addendum + clearance;
     pitch_slope = tan(pressure_angle);
 
-    linear_extrude_flat_option(flat=flat, height=rim_thickness)
-        union()
-        {
-            translate([0,-dedendum-rim_width/2])
-                square([number_of_teeth*pitch, rim_width],center=true);
+    module profile() {
+        translate([0,-dedendum-rim_width/2])
+            square([number_of_teeth*pitch, rim_width],center=true);
 
-            p1 = pitch / 4 + pitch_slope * dedendum;
-            p2 = pitch / 4 - pitch_slope * addendum;
-            for(i=[1:number_of_teeth])
-                translate([pitch*(i-number_of_teeth/2-0.5),0])
-                    polygon(points=[
-                            [-p1,-dedendum],
-                            [p1,-dedendum],
-                            [p2,addendum],
-                            [-p2,addendum]
+         p1 = pitch / 4 + pitch_slope * dedendum;
+         p2 = pitch / 4 - pitch_slope * addendum;
+         for(i=[1:number_of_teeth])
+             translate([pitch*(i-number_of_teeth/2-0.5),0])
+                 polygon(points=[
+                        [-p1,-dedendum],
+                        [p1,-dedendum],
+                        [p2,addendum],
+                        [-p2,addendum]
                     ]);
+    }
+
+    if (flat) {
+        profile();
+    } else {
+        // Helical helper variables
+        length = pitch * number_of_teeth;
+        height = rim_thickness + length*abs(tan(helix_angle));
+        x = length + rim_thickness*abs(tan(helix_angle));
+        intersection() {
+            translate([0,0,rim_thickness/2]) // Translate back to original baseline
+            rotate([0,helix_angle,0])        // Rotate with helix angle
+            translate([0,0,-height/2])       // Rotation around middle of extrusion
+            linear_extrude(height=height) {
+                rotate([0,-helix_angle,0])   // Adjust profile to helix angle
+                profile();
+            }
+            // Clip extrusion to rim height
+            translate([-x/2,-dedendum-rim_width, 0]) cube([x, rim_width+dedendum+addendum, rim_thickness]);
         }
+    }
 }
 
 module linear_extrude_flat_option(flat =false, height = 10, center = false, convexity = 2, twist = 0)
