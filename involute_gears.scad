@@ -316,7 +316,8 @@ module gear (
     twist=0,
     involute_facets=0,
     flat=false,
-    helix_angle=undef)
+    helix_angle=undef,
+    number_of_hidden_teeth=0)
 {
     // Check for undefined circular pitch (happens when neither circular_pitch or diametral_pitch are specified)
     if (circular_pitch==undef)
@@ -406,7 +407,8 @@ module gear (
                     base_radius = base_radius,
                     outer_radius = outer_radius,
                     half_thick_angle = half_thick_angle,
-                    involute_facets=involute_facets);
+                    involute_facets=involute_facets,
+                    number_of_hidden_teeth = number_of_hidden_teeth);
 
                 //if we have a 0 hub thickness, then hub must be removed
                 if (hub_thickness == 0)
@@ -551,13 +553,14 @@ module gear_shape (
     base_radius,
     outer_radius,
     half_thick_angle,
-    involute_facets)
+    involute_facets,
+    number_of_hidden_teeth=0)
 {
     union()
     {
         rotate (half_thick_angle) circle ($fn=number_of_teeth*2, r=root_radius);
 
-        for (i = [1:number_of_teeth])
+        for (i = [1:1:number_of_teeth-number_of_hidden_teeth])
         {
             rotate ([0,0,i*360/number_of_teeth])
             {
