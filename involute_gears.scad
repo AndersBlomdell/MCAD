@@ -871,3 +871,31 @@ module test_backlash ()
     cylinder ($fn=20,r=backlash / 4,h=25);
 }
 
+module test_helix_rack_and_gear_with_hidden_teeth() {
+    pitch = 5;
+    pressure_angle = 20;
+    helix_angle = 30;
+    rim_thickness = 10;
+    module helical_gear() {
+        translate([0,20*pitch/pi/2, 0]) rotate([0,0,-60])
+        gear (number_of_teeth=20,
+              number_of_hidden_teeth=15,
+              circular_pitch=pitch,
+              pressure_angle=pressure_angle,
+              rim_thickness=rim_thickness,
+              helix_angle=helix_angle);
+    }
+    module helical_rack() {
+        rack(number_of_teeth=10,
+             circular_pitch=pitch,
+             pressure_angle=pressure_angle,
+             rim_thickness=rim_thickness,
+             helix_angle=-helix_angle);
+   }
+   helical_gear();
+   helical_rack();
+   mirror([0,0,1]) {
+       helical_gear();
+       helical_rack();
+   }
+}
