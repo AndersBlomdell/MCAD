@@ -315,7 +315,8 @@ module gear (
     backlash=0,
     twist=0,
     involute_facets=0,
-    flat=false)
+    flat=false,
+    helix_angle=undef)
 {
     // Check for undefined circular pitch (happens when neither circular_pitch or diametral_pitch are specified)
     if (circular_pitch==undef)
@@ -356,6 +357,9 @@ module gear (
     rim_thickness = (rim_thickness!=undef?(rim_thickness!=0?rim_thickness:gear_thickness):gear_thickness * 1.5);
     rim_width = (rim_width!=undef?rim_width:root_radius * .1);
     rim_radius = root_radius - rim_width;
+
+    // Convert helix_angle to twist
+    twist = (helix_angle!=undef?180/pi*rim_thickness/(pitch_radius*tan(90-helix_angle)):twist);
 
     // Variables controlling the hub
     hub_thickness = (hub_thickness!=undef?(hub_thickness!=0?hub_thickness:gear_thickness):gear_thickness * 2);
